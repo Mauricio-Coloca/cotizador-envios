@@ -140,8 +140,13 @@
             border-radius: var(--border-radius);
             border-left: 4px solid var(--primary-color);
             animation: fadeIn 0.5s ease-out;
-            display: block !important;
-            opacity: 1 !important;
+            display: none;
+            opacity: 0;
+        }
+        
+        #resultado.visible {
+            display: block;
+            opacity: 1;
         }
         
         #resultado h3 {
@@ -737,7 +742,7 @@
             });
 
             // Mostrar resultados
-            mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, esModoRecibir);
+            mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, cantidadNecesaria, comision);
             
             // Mostrar sección de datos completos con animación
             const datosEnvio = document.getElementById('datosEnvio');
@@ -760,28 +765,26 @@
         }
     }
 
-    function mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, esModoRecibir) {
+    function mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, cantidadNecesaria, comision) {
         const resultadoDiv = document.getElementById('resultado');
         
-        // Limpiar y asegurar que el div sea visible
+        // Limpiar y mostrar el div
         resultadoDiv.innerHTML = '';
-        resultadoDiv.style.display = 'block';
-        resultadoDiv.style.opacity = '1';
+        resultadoDiv.classList.add('visible');
         
         // Crear contenido HTML directamente
         resultadoDiv.innerHTML = `
             <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 15px;">📊 Resultado de la Cotización</h3>
             <p><strong>💱 Tasa de Cambio:</strong> 1 ${monedaOrigen} = ${formatearTasaCambio(tasaCambioActual)} ${monedaDestino}</p>
-            ${esModoRecibir ? 
-                `<p><strong>📤 Cantidad necesaria a enviar:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>` : 
-                `<p><strong>📥 Monto Original:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>`}
+            ${currentMode === 'receive' ? 
+                `<p><strong>📤 Cantidad necesaria a enviar:</strong> ${formatearMontoFiat(cantidadNecesaria)} ${monedaOrigen}</p>
+                 <p><strong>📥 Monto que recibirá:</strong> ${formatearMontoFiat(cantidad)} ${monedaDestino}</p>` : 
+                `<p><strong>📤 Monto que envía:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>
+                 <p><strong>📥 Monto que recibirá:</strong> ${formatearMontoFiat(montoFinal)} ${monedaDestino}</p>`}
             <p><strong>🔄 Monto Convertido:</strong> ${formatearMontoFiat(montoConvertido)} ${monedaDestino}</p>
-            <p><strong>💸 Comisión (${formatearMontoFiat(montoComision/montoConvertido*100)}%):</strong> -${formatearMontoFiat(montoComision)} ${monedaDestino}</p>
-            <p><strong>✅ Monto Final a Recibir:</strong> <span class="monto-final">${formatearMontoFiat(montoFinal)} ${monedaDestino}</span></p>
+            <p><strong>💸 Comisión (${comision}%):</strong> -${formatearMontoFiat(montoComision)} ${monedaDestino}</p>
+            <p><strong>✅ Monto Final:</strong> <span class="monto-final">${formatearMontoFiat(montoFinal)} ${monedaDestino}</span></p>
         `;
-        
-        // Forzar repintado para asegurar que se muestre
-        void resultadoDiv.offsetHeight;
     }
 
     async function confirmarCotizacion() {
@@ -832,85 +835,12 @@
 
     function mostrarError(mensaje) {
         const resultado = document.getElementById('resultado');
+        resultado.classList.add('visible');
         resultado.innerHTML = `
             <p style="color: #ff4444; font-weight: 600; animation: shake 0.5s;">
                 ✗ ${mensaje}
             </p>
         `;
-    }
-
-    // FUNCIONES DE APOYO (VALIDACIÓN)
-    function validarCamposCotizacion() {
-        const campos = currentMode === 'send' 
-            ? ['cantidadEnviar', 'comision'] 
-            : ['cantidadRecibir', 'comision'];
-        
-        let todosValidos = true;
-        
-        campos.forEach(id => {
-            const input = document.getElementById(id);
-            if (!validarCampo(input)) {
-                todosValidos = false;
-                // Scroll al campo con error
-                setTimeout(() => {
-                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            }
-        });
-        
-        if (!todosValidos) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    function validarDatosCompletos() {
-        const camposRequeridos = [
-            'solicitante', 'beneficiario', 'tipoID', 'numeroID'
-        ];
-        
-        for (const id of camposRequeridos) {
-            const input = document.getElementById(id);
-            if (!input.value.trim()) {
-                mostrarError(`El campo ${input.placeholder} es obligatorio`);
-                input.focus();
-                setTimeout(() => {
-                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-                return false;
-            }
-            
-            // Validación adicional para números de identificación
-            if (id === 'numeroID' && !/^[\d\-\.]+$/.test(input.value)) {
-                mostrarError("Número de ID inválido. Solo debe contener números");
-                input.focus();
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    function validarCampo(input) {
-        const value = input.value;
-        const errorId = `error${input.id.charAt(0).toUpperCase() + input.id.slice(1)}`;
-        const errorElement = document.getElementById(errorId);
-        
-        if (!errorElement) return true;
-        
-        let isValid = true;
-        
-        if (input.id === 'comision') {
-            const valorNumerico = parseFloat(input.dataset.rawValue || value.replace(',', '.'));
-            isValid = !isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 100;
-        } else {
-            const valorNumerico = parseInt(value.replace(/\./g, ''));
-            isValid = !isNaN(valorNumerico) && valorNumerico > 0;
-        }
-        
-        errorElement.style.display = isValid ? 'none' : 'block';
-        return isValid;
     }
 
     // FUNCIONES DE APOYO (VALIDACIÓN)
@@ -1003,6 +933,7 @@
 
     function obtenerDatosCompletos() {
         const resultadoTexto = document.getElementById('resultado').innerText;
+        const { comision } = obtenerDatosCotizacion();
         
         return {
             "orderNumber": "", // Se llena al enviar
@@ -1014,19 +945,15 @@
             "Número de ID": document.getElementById('numeroID').value.trim(),
             "Tipo de cuenta": document.getElementById('tipoCuenta').value.trim(),
             "Número de cuenta": document.getElementById('numeroCuenta').value.trim(),
-            "cantidad": formatearMontoFiat(
-                currentMode === 'receive'
-                    ? limpiarNumeroBR(extraerValor(resultadoTexto, "Cantidad necesaria a enviar"))
-                    : limpiarNumeroBR(document.getElementById('cantidadEnviar').value)
-            ),
+            "cantidad": currentMode === 'receive'
+                ? limpiarNumeroBR(document.getElementById('cantidadRecibir').value)
+                : limpiarNumeroBR(document.getElementById('cantidadEnviar').value),
             "monedaOrigen": document.getElementById('monedaOrigen').value,
             "monedaDestino": document.getElementById('monedaDestino').value,
-            "Valor cotizado": formatearMontoFiat(
-                currentMode === 'receive'
-                    ? limpiarNumeroBR(document.getElementById('cantidadRecibir').value)
-                    : limpiarNumeroBR(extraerValor(resultadoTexto, "Monto Final a Recibir"))
-            ),
-            "Comision": parseFloat(limpiarNumeroBR(document.getElementById('comision').value)),
+            "Valor cotizado": currentMode === 'receive'
+                ? limpiarNumeroBR(document.getElementById('cantidadRecibir').value)
+                : limpiarNumeroBR(extraerValor(resultadoTexto, "Monto Final")),
+            "Comision": parseFloat(comision),
             "Modo": currentMode === 'send' ? "Enviar" : "Recibir",
             "Verificacion": ""
         };
@@ -1062,11 +989,13 @@
         let montoConvertido, montoComision, montoFinal, cantidadNecesaria;
         
         if (esModoRecibir) {
+            // Modo "Quiero recibir": calcular cuánto necesito enviar para recibir X
             montoFinal = cantidad;
             montoConvertido = montoFinal / (1 - (comision / 100));
             cantidadNecesaria = montoConvertido / tasa;
             montoComision = montoConvertido - montoFinal;
         } else {
+            // Modo "Quiero enviar": calcular cuánto recibiré al enviar X
             cantidadNecesaria = cantidad;
             montoConvertido = cantidad * tasa;
             montoComision = montoConvertido * (comision / 100);
@@ -1097,11 +1026,6 @@
             minimumFractionDigits: decimalCount,
             maximumFractionDigits: 6
         });
-    }
-
-    function mostrarTasaCompleta(tasa) {
-        if (isNaN(tasa)) return "1,000000";
-        return tasa.toFixed(6).replace('.', ',');
     }
 
     function limpiarNumeroBR(valor) {
@@ -1188,6 +1112,7 @@
         document.getElementById('cantidadRecibir').value = "";
         document.getElementById('comision').value = "5,00";
         document.getElementById('resultado').innerHTML = "";
+        document.getElementById('resultado').classList.remove('visible');
         document.getElementById('datosEnvio').classList.add('hidden');
         document.querySelectorAll('#datosEnvio input').forEach(input => input.value = "");
         setMode('send');
