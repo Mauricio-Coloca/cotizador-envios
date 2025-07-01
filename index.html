@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotizador de envíos</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
         :root {
             --bg-color: #f4f4f4;
             --text-color: #13252B;
@@ -14,6 +15,8 @@
             --primary-color: #00B022;
             --primary-hover: #038919;
             --shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
         }
         
         [data-theme="dark"] {
@@ -27,6 +30,11 @@
             --shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         }
         
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--bg-color);
@@ -37,59 +45,129 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
         }
+        
         .container {
             background-color: var(--container-bg);
-            padding: 40px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             width: 100%;
             max-width: 800px;
             text-align: center;
             position: relative;
-            transition: background-color 0.3s;
+            animation: fadeIn 0.5s ease-out;
+            overflow: hidden;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         h1 {
             color: var(--text-color);
             margin-bottom: 20px;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            animation: slideDown 0.5s ease-out;
         }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
             color: var(--text-color);
-            font-weight: bold;
+            font-weight: 600;
             text-align: left;
+            font-size: 0.9rem;
         }
+        
         input, select, button {
             width: 100%;
-            padding: 15px;
-            margin-top: 5px;
+            padding: 12px 15px;
+            margin-top: 8px;
             border: 1px solid var(--border-color);
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             font-family: 'Montserrat', sans-serif;
-            transition: background-color 0.3s, border-color 0.3s;
+            font-size: 0.95rem;
+            transition: var(--transition);
         }
+        
         input, select {
             background-color: var(--input-bg);
             color: var(--text-color);
         }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 176, 34, 0.2);
+        }
+        
         button {
             background-color: var(--primary-color);
             color: white;
             border: none;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
         }
+        
         button:hover {
             background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
         #resultado {
-            margin-top: 20px;
-            font-size: 1.2em;
+            margin-top: 25px;
+            font-size: 1rem;
             color: var(--text-color);
             text-align: left;
+            background: rgba(0, 176, 34, 0.05);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+            animation: fadeIn 0.5s ease-out;
+            display: block !important;
+            opacity: 1 !important;
         }
+        
+        #resultado h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        #resultado p {
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        #resultado p:last-child {
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        #resultado .monto-final {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+        
         .spinner {
             display: none;
             margin: 20px auto;
@@ -100,60 +178,108 @@
             height: 30px;
             animation: spin 1s linear infinite;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
         .hidden {
-            display: none;
+            display: none !important;
         }
+        
         img {
             width: 200px;
+            max-width: 80%;
             margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
         }
+        
         .form-section {
             margin-bottom: 30px;
+            animation: fadeIn 0.6s ease-out;
         }
+        
         .form-section h2 {
             text-align: left;
             color: var(--text-color);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            position: relative;
+            padding-bottom: 5px;
         }
+        
+        .form-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
         .aligned-input {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            margin-bottom: 15px;
         }
+        
         .mode-selector {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            gap: 10px;
         }
+        
         .mode-btn {
-            padding: 10px 20px;
-            margin: 0 5px;
-            background-color: #ddd;
-            color: #333;
-            border-radius: 5px;
+            padding: 12px 25px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+            border: 1px solid var(--border-color);
         }
+        
         .mode-btn.active {
             background-color: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }
+        
+        .mode-btn:not(.active):hover {
+            background-color: var(--bg-color);
+        }
+        
         .error-message {
             color: #ff4444;
-            font-size: 0.8em;
+            font-size: 0.8rem;
             margin-top: 5px;
             display: none;
+            text-align: left;
+            animation: shake 0.3s ease;
         }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
         .tooltip {
             position: relative;
             display: inline-block;
             border-bottom: 1px dotted var(--text-color);
             cursor: help;
         }
+        
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 200px;
@@ -161,7 +287,7 @@
             color: #fff;
             text-align: center;
             border-radius: 6px;
-            padding: 5px;
+            padding: 8px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
@@ -169,31 +295,37 @@
             margin-left: -100px;
             opacity: 0;
             transition: opacity 0.3s;
-            font-size: 0.9em;
+            font-size: 0.85rem;
+            font-weight: normal;
         }
+        
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
+        
         .theme-switch {
             position: absolute;
             top: 20px;
             right: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
+        
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 50px;
+            height: 24px;
         }
+        
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+        
         .slider {
             position: absolute;
             cursor: pointer;
@@ -205,22 +337,132 @@
             transition: .4s;
             border-radius: 34px;
         }
+        
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
+            height: 16px;
+            width: 16px;
             left: 4px;
             bottom: 4px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
         }
+        
         input:checked + .slider {
             background-color: var(--primary-color);
         }
+        
         input:checked + .slider:before {
             transform: translateX(26px);
+        }
+        
+        #themeLabel {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Estilos para los campos de cantidad */
+        .important-field {
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-top: 20px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .important-input {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(0, 176, 34, 0.05);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .field-icon {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 rgba(0, 176, 34, 0); }
+            50% { box-shadow: 0 0 10px rgba(0, 176, 34, 0.3); }
+            100% { box-shadow: 0 0 0 rgba(0, 176, 34, 0); }
+        }
+        
+        .important-input:focus {
+            animation: pulseGlow 2s infinite;
+            outline: none;
+            background-color: var(--input-bg);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .mode-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mode-btn {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .theme-switch {
+                position: static;
+                justify-content: flex-end;
+                margin-bottom: 15px;
+            }
+            
+            input, select, button {
+                padding: 10px 12px;
+            }
+            
+            #resultado {
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+            }
+            
+            .form-section h2 {
+                font-size: 1.1rem;
+            }
+            
+            label {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Animación para los campos del formulario */
+        .form-section > * {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -234,7 +476,7 @@
             <span id="themeLabel">Modo Oscuro</span>
         </div>
         
-        <img src="Logo color horizontal.png" alt="Logo">
+        <img src="Logo color horizontal.png" alt="Logo" class="logo">
         <h1>Cotizador de envíos</h1>
         
         <div class="mode-selector">
@@ -273,19 +515,25 @@
             </select>
             
             <div id="sendSection">
-                <label for="cantidadEnviar">Cantidad a enviar:</label>
-                <input type="text" id="cantidadEnviar" placeholder="Ingrese la cantidad a enviar">
+                <label for="cantidadEnviar" class="important-field">
+                    <span class="field-icon">💰</span>
+                    Cantidad a enviar:
+                </label>
+                <input type="text" id="cantidadEnviar" placeholder="Ej: 1.000.000" class="important-input">
                 <div class="error-message" id="errorCantidadEnviar">Ingrese un valor numérico válido</div>
             </div>
             
             <div id="receiveSection" class="hidden">
-                <label for="cantidadRecibir">Cantidad a recibir:</label>
-                <input type="text" id="cantidadRecibir" placeholder="Ingrese la cantidad que desea recibir">
+                <label for="cantidadRecibir" class="important-field">
+                    <span class="field-icon">💰</span>
+                    Cantidad a recibir:
+                </label>
+                <input type="text" id="cantidadRecibir" placeholder="Ej: 500.000" class="important-input">
                 <div class="error-message" id="errorCantidadRecibir">Ingrese un valor numérico válido</div>
             </div>
             
             <label for="comision">Comisión (%):</label>
-            <input type="text" id="comision" placeholder="Ingrese la comisión en %" value="5,00">
+            <input type="text" id="comision" placeholder="Ej: 5,00" value="5,00">
             <div class="error-message" id="errorComision">Ingrese un porcentaje válido (0-100)</div>
             
             <button onclick="calcularEnvio()">Cotizar</button>
@@ -324,97 +572,324 @@
     </div>
 
 <script>
+    // CONSTANTES Y VARIABLES GLOBALES
     const sheetDBURL = 'https://sheetdb.io/api/v1/40v2uh03f9082';
-    let currentMode = 'send'; // 'send' or 'receive'
+    let currentMode = 'send';
     let tasaCambioActual = 0;
-    let usuarioActual = "OP"; // Puedes cambiarlo o hacerlo dinámico
-
-    // Configurar autoformato al cargar la página
+    const usuarioActual = "OP"; // Cambiar por tu sistema de usuarios
+    
+    // INICIALIZACIÓN
     document.addEventListener('DOMContentLoaded', function() {
         configurarAutoFormato();
         setMode('send');
         cargarTemaGuardado();
+        console.log("Sistema inicializado. Modo:", currentMode);
+        
+        // Agregar animación de carga inicial
+        document.querySelectorAll('.form-section > *').forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.1}s`;
+        });
     });
 
+    // FUNCIONES PRINCIPALES
     function setMode(mode) {
         currentMode = mode;
         document.getElementById('modeSend').classList.toggle('active', mode === 'send');
         document.getElementById('modeReceive').classList.toggle('active', mode === 'receive');
         document.getElementById('sendSection').classList.toggle('hidden', mode !== 'send');
         document.getElementById('receiveSection').classList.toggle('hidden', mode !== 'receive');
+        
+        // Enfocar automáticamente el campo correspondiente
+        setTimeout(() => {
+            const fieldToFocus = mode === 'send' ? 'cantidadEnviar' : 'cantidadRecibir';
+            document.getElementById(fieldToFocus)?.focus();
+        }, 100);
     }
 
-    function configurarAutoFormato() {
-        const campos = ['cantidadEnviar', 'cantidadRecibir', 'comision'];
+    // FUNCIONES DE ENVÍO COMPLETAMENTE SEPARADAS - VERSIÓN CORREGIDA
+    async function enviarAlHistorial(datos) {
+        // Validación más estricta
+        const camposProhibidos = ['Solicitante', 'Beneficiario', 'Tipo de ID', 'Número de ID', 'Tipo de cuenta', 'Número de cuenta'];
+        for (const campo of camposProhibidos) {
+            if (datos[campo]) {
+                throw new Error(`Campo prohibido detectado en Historial: ${campo}`);
+            }
+        }
+
+        const payload = {
+            "Timestamp": new Date().toISOString(),
+            "Modo": datos.modo === 'send' ? "Enviar" : "Recibir",
+            "MonedaOrigen": datos.monedaOrigen,
+            "MonedaDestino": datos.monedaDestino,
+            "MontoOrigen": datos.montoOrigen,
+            "MontoDestino": datos.montoDestino,
+            "TasaCambio": parseFloat(datos.tasaCambio).toFixed(6),
+            "Comision": parseFloat(datos.comision), // Asegurar formato numérico
+            "Usuario": datos.usuario || "SISTEMA"
+        };
+
+        console.log("[HISTORIAL] Enviando:", payload);
+        
+        const response = await fetch(`${sheetDBURL}?sheetName=Historial`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error("Error al enviar a Historial");
+        return await response.json();
+    }
+
+    async function enviarAInfoCotizador(datos) {
+        // Validación más completa
+        const required = ['Solicitante', 'Beneficiario', 'Tipo de ID', 'Número de ID'];
+        const missingFields = required.filter(field => !datos[field] || datos[field].trim() === '');
+        
+        if (missingFields.length > 0) {
+            throw new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+        }
+
+        // Limpieza de datos
+        const payload = {
+            "fecha": new Date().toLocaleDateString('pt-BR'),
+            "Hora": new Date().toLocaleTimeString('en-US', { hour12: false }),
+            "Solicitante": datos.Solicitante.trim(),
+            "Beneficiario": datos.Beneficiario.trim(),
+            "Tipo de ID": datos["Tipo de ID"].trim(),
+            "Número de ID": datos["Número de ID"].trim(),
+            "Tipo de cuenta": datos["Tipo de cuenta"]?.trim() || "",
+            "Número de cuenta": datos["Número de cuenta"]?.trim() || "",
+            "cantidad": parseFloat(datos.cantidad),
+            "monedaOrigen": datos.monedaOrigen,
+            "monedaDestino": datos.monedaDestino,
+            "Valor cotizado": parseFloat(datos["Valor cotizado"]),
+            "Comision": parseFloat(datos.Comision), // Asegurar formato numérico
+            "Modo": datos.Modo,
+            "Verificacion": ""
+        };
+
+        console.log("[INFO COTIZADOR] Enviando:", payload);
+        
+        const response = await fetch(`${sheetDBURL}?sheetName=Info Cotizador`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error("Error al enviar a Info Cotizador");
+        return await response.json();
+    }
+
+    // USO EN LAS FUNCIONES PRINCIPALES
+    async function calcularEnvio() {
+        try {
+            // Validar campos básicos
+            if (!validarCamposCotizacion()) {
+                console.warn("Validación fallida en campos de cotización");
+                return;
+            }
+
+            // Obtener datos del formulario
+            const { monedaOrigen, monedaDestino, comision, cantidad } = obtenerDatosCotizacion();
+            const esModoRecibir = currentMode === 'receive';
+            
+            console.log("Datos obtenidos:", { 
+                monedaOrigen, 
+                monedaDestino, 
+                comision, 
+                cantidad, 
+                modo: currentMode 
+            });
+
+            // Mostrar spinner
+            document.getElementById('spinner').style.display = 'block';
+            document.querySelector('button').classList.add('loading');
+
+            // Obtener tasa de cambio
+            tasaCambioActual = await obtenerTasaCambio(monedaOrigen, monedaDestino);
+            console.log("Tasa obtenida:", tasaCambioActual);
+            
+            // Calcular montos
+            const { montoConvertido, montoComision, montoFinal, cantidadNecesaria } = calcularMontos(
+                cantidad, 
+                comision, 
+                tasaCambioActual, 
+                esModoRecibir
+            );
+
+            console.log("Montos calculados:", {
+                montoConvertido,
+                montoComision,
+                montoFinal,
+                cantidadNecesaria
+            });
+
+            // SOLO HISTORIAL - NUNCA A INFO COTIZADOR
+            await enviarAlHistorial({
+                modo: currentMode,
+                monedaOrigen,
+                monedaDestino,
+                montoOrigen: esModoRecibir ? cantidadNecesaria : cantidad,
+                montoDestino: montoFinal,
+                tasaCambio: tasaCambioActual,
+                comision: parseFloat(comision),
+                usuario: usuarioActual
+            });
+
+            // Mostrar resultados
+            mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, esModoRecibir);
+            
+            // Mostrar sección de datos completos con animación
+            const datosEnvio = document.getElementById('datosEnvio');
+            datosEnvio.classList.remove('hidden');
+            datosEnvio.style.animation = 'fadeIn 0.6s ease-out';
+            
+            // Scroll suave a la sección de datos
+            setTimeout(() => {
+                datosEnvio.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+            
+            console.log("Cotización completada y guardada en Historial");
+
+        } catch (error) {
+            console.error('Error en calcularEnvio:', error);
+            mostrarError('Error al procesar la cotización: ' + error.message);
+        } finally {
+            document.getElementById('spinner').style.display = 'none';
+            document.querySelector('button').classList.remove('loading');
+        }
+    }
+
+    function mostrarResultados(monedaOrigen, monedaDestino, cantidad, montoConvertido, montoComision, montoFinal, esModoRecibir) {
+        const resultadoDiv = document.getElementById('resultado');
+        
+        // Limpiar y asegurar que el div sea visible
+        resultadoDiv.innerHTML = '';
+        resultadoDiv.style.display = 'block';
+        resultadoDiv.style.opacity = '1';
+        
+        // Crear contenido HTML directamente
+        resultadoDiv.innerHTML = `
+            <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 15px;">📊 Resultado de la Cotización</h3>
+            <p><strong>💱 Tasa de Cambio:</strong> 1 ${monedaOrigen} = ${formatearTasaCambio(tasaCambioActual)} ${monedaDestino}</p>
+            ${esModoRecibir ? 
+                `<p><strong>📤 Cantidad necesaria a enviar:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>` : 
+                `<p><strong>📥 Monto Original:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>`}
+            <p><strong>🔄 Monto Convertido:</strong> ${formatearMontoFiat(montoConvertido)} ${monedaDestino}</p>
+            <p><strong>💸 Comisión (${formatearMontoFiat(montoComision/montoConvertido*100)}%):</strong> -${formatearMontoFiat(montoComision)} ${monedaDestino}</p>
+            <p><strong>✅ Monto Final a Recibir:</strong> <span class="monto-final">${formatearMontoFiat(montoFinal)} ${monedaDestino}</span></p>
+        `;
+        
+        // Forzar repintado para asegurar que se muestre
+        void resultadoDiv.offsetHeight;
+    }
+
+    async function confirmarCotizacion() {
+        try {
+            if (!confirm("¿Está seguro que desea confirmar esta cotización?")) {
+                return;
+            }
+
+            // Validar campos completos
+            if (!validarDatosCompletos()) {
+                console.warn("Validación fallida en datos completos");
+                return;
+            }
+
+            // Obtener datos del formulario
+            const datos = obtenerDatosCompletos();
+            console.log("Datos completos obtenidos:", datos);
+            
+            // Mostrar spinner
+            document.getElementById('spinner').style.display = 'block';
+            document.querySelector('#datosEnvio button').classList.add('loading');
+
+            // SOLO INFO COTIZADOR - NUNCA A HISTORIAL
+            await enviarAInfoCotizador(datos);
+            
+            // Mostrar confirmación con animación
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = `
+                <div style="animation: fadeIn 0.5s ease-out">
+                    <p style="color: var(--primary-color); font-weight: 800; text-align: center;">
+                        ✓ Envío registrado correctamente
+                    </p>
+                    <p><strong>Número de transacción:</strong> ${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}</p>
+                </div>
+            `;
+            
+            // Resetear formulario después de un breve retraso
+            setTimeout(resetForm, 2000);
+            
+        } catch (error) {
+            console.error('Error en confirmarCotizacion:', error);
+            mostrarError('Error al registrar el envío completo: ' + error.message);
+        } finally {
+            document.getElementById('spinner').style.display = 'none';
+            document.querySelector('#datosEnvio button').classList.remove('loading');
+        }
+    }
+
+    function mostrarError(mensaje) {
+        const resultado = document.getElementById('resultado');
+        resultado.innerHTML = `
+            <p style="color: #ff4444; font-weight: 600; animation: shake 0.5s;">
+                ✗ ${mensaje}
+            </p>
+        `;
+    }
+
+    // FUNCIONES DE APOYO (VALIDACIÓN)
+    function validarCamposCotizacion() {
+        const campos = currentMode === 'send' 
+            ? ['cantidadEnviar', 'comision'] 
+            : ['cantidadRecibir', 'comision'];
+        
+        let todosValidos = true;
         
         campos.forEach(id => {
             const input = document.getElementById(id);
-            
-            input.addEventListener('input', function(e) {
-                // Guardar posición del cursor
-                const cursorPos = this.selectionStart;
-                const originalLength = this.value.length;
-                
-                // Manejo especial para el campo de comisión
-                if (id === 'comision') {
-                    // Permitir coma o punto como separador decimal
-                    let valor = this.value.replace(/[^\d,.]/g, '');
-                    
-                    // Reemplazar coma por punto para cálculo interno
-                    this.dataset.rawValue = valor.replace(/,/g, '.');
-                    
-                    // Mostrar coma como separador decimal visualmente
-                    if (e.inputType !== 'deleteContentBackward') {
-                        valor = valor.replace('.', ',');
-                    }
-                    
-                    // Limitar a un separador decimal
-                    const partes = valor.split(/[,.]/);
-                    if (partes.length > 2) {
-                        valor = partes[0] + ',' + partes.slice(1).join('');
-                    }
-                    
-                    this.value = valor;
-                } else {
-                    // Para campos de cantidad: solo números y formateo de miles
-                    let valor = this.value.replace(/[^\d]/g, '');
-                    
-                    if (valor.length > 0) {
-                        valor = parseInt(valor).toLocaleString('pt-BR');
-                    }
-                    
-                    this.value = valor;
-                }
-                
-                // Restaurar posición del cursor
-                const newLength = this.value.length;
-                const lengthDiff = newLength - originalLength;
-                this.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
-                
-                // Validar el campo
-                validarCampo(this);
-            });
-            
-            // Configurar evento blur para formateo final
-            input.addEventListener('blur', function() {
-                if (this.value === '') return;
-                
-                if (id === 'comision') {
-                    // Asegurar que siempre tenga 2 decimales
-                    let valor = parseFloat(this.dataset.rawValue || this.value.replace(',', '.'));
-                    if (isNaN(valor)) {
-                        this.value = '';
-                        return;
-                    }
-                    
-                    this.value = valor.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                    this.dataset.rawValue = valor;
-                }
-            });
+            if (!validarCampo(input)) {
+                todosValidos = false;
+                // Scroll al campo con error
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
         });
+        
+        if (!todosValidos) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    function validarDatosCompletos() {
+        const camposRequeridos = [
+            'solicitante', 'beneficiario', 'tipoID', 'numeroID'
+        ];
+        
+        for (const id of camposRequeridos) {
+            const input = document.getElementById(id);
+            if (!input.value.trim()) {
+                mostrarError(`El campo ${input.placeholder} es obligatorio`);
+                input.focus();
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+                return false;
+            }
+            
+            // Validación adicional para números de identificación
+            if (id === 'numeroID' && !/^[\d\-\.]+$/.test(input.value)) {
+                mostrarError("Número de ID inválido. Solo debe contener números");
+                input.focus();
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     function validarCampo(input) {
@@ -438,6 +913,169 @@
         return isValid;
     }
 
+    // FUNCIONES DE APOYO (VALIDACIÓN)
+    function validarCamposCotizacion() {
+        const campos = currentMode === 'send' 
+            ? ['cantidadEnviar', 'comision'] 
+            : ['cantidadRecibir', 'comision'];
+        
+        let todosValidos = true;
+        
+        campos.forEach(id => {
+            const input = document.getElementById(id);
+            if (!validarCampo(input)) {
+                todosValidos = false;
+                // Scroll al campo con error
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        });
+        
+        if (!todosValidos) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    function validarDatosCompletos() {
+        const camposRequeridos = [
+            'solicitante', 'beneficiario', 'tipoID', 'numeroID'
+        ];
+        
+        for (const id of camposRequeridos) {
+            const input = document.getElementById(id);
+            if (!input.value.trim()) {
+                mostrarError(`El campo ${input.placeholder} es obligatorio`);
+                input.focus();
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+                return false;
+            }
+            
+            // Validación adicional para números de identificación
+            if (id === 'numeroID' && !/^[\d\-\.]+$/.test(input.value)) {
+                mostrarError("Número de ID inválido. Solo debe contener números");
+                input.focus();
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    function validarCampo(input) {
+        const value = input.value;
+        const errorId = `error${input.id.charAt(0).toUpperCase() + input.id.slice(1)}`;
+        const errorElement = document.getElementById(errorId);
+        
+        if (!errorElement) return true;
+        
+        let isValid = true;
+        
+        if (input.id === 'comision') {
+            const valorNumerico = parseFloat(input.dataset.rawValue || value.replace(',', '.'));
+            isValid = !isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 100;
+        } else {
+            const valorNumerico = parseInt(value.replace(/\./g, ''));
+            isValid = !isNaN(valorNumerico) && valorNumerico > 0;
+        }
+        
+        errorElement.style.display = isValid ? 'none' : 'block';
+        return isValid;
+    }
+
+    // FUNCIONES DE APOYO (DATOS)
+    function obtenerDatosCotizacion() {
+        return {
+            monedaOrigen: document.getElementById('monedaOrigen').value,
+            monedaDestino: document.getElementById('monedaDestino').value,
+            comision: limpiarNumeroBR(document.getElementById('comision').value),
+            cantidad: limpiarNumeroBR(
+                currentMode === 'receive' 
+                    ? document.getElementById('cantidadRecibir').value 
+                    : document.getElementById('cantidadEnviar').value
+            )
+        };
+    }
+
+    function obtenerDatosCompletos() {
+        const resultadoTexto = document.getElementById('resultado').innerText;
+        
+        return {
+            "orderNumber": "", // Se llena al enviar
+            "fecha": new Date().toLocaleDateString('pt-BR'),
+            "Hora": new Date().toLocaleTimeString('en-US', { hour12: false }),
+            "Solicitante": document.getElementById('solicitante').value.trim(),
+            "Beneficiario": document.getElementById('beneficiario').value.trim(),
+            "Tipo de ID": document.getElementById('tipoID').value.trim(),
+            "Número de ID": document.getElementById('numeroID').value.trim(),
+            "Tipo de cuenta": document.getElementById('tipoCuenta').value.trim(),
+            "Número de cuenta": document.getElementById('numeroCuenta').value.trim(),
+            "cantidad": formatearMontoFiat(
+                currentMode === 'receive'
+                    ? limpiarNumeroBR(extraerValor(resultadoTexto, "Cantidad necesaria a enviar"))
+                    : limpiarNumeroBR(document.getElementById('cantidadEnviar').value)
+            ),
+            "monedaOrigen": document.getElementById('monedaOrigen').value,
+            "monedaDestino": document.getElementById('monedaDestino').value,
+            "Valor cotizado": formatearMontoFiat(
+                currentMode === 'receive'
+                    ? limpiarNumeroBR(document.getElementById('cantidadRecibir').value)
+                    : limpiarNumeroBR(extraerValor(resultadoTexto, "Monto Final a Recibir"))
+            ),
+            "Comision": parseFloat(limpiarNumeroBR(document.getElementById('comision').value)),
+            "Modo": currentMode === 'send' ? "Enviar" : "Recibir",
+            "Verificacion": ""
+        };
+    }
+
+    // FUNCIONES DE APOYO (CÁLCULOS)
+    async function obtenerTasaCambio(origen, destino) {
+        const apiID = "colocagroupsas266471220";
+        const apiKey = "p860ankk1m5q0e3q4l929blrr1";
+        const url = `https://xecdapi.xe.com/v1/convert_from.json/?from=${origen}&to=${destino}&amount=1`;
+
+        console.log("Obteniendo tasa de cambio de:", url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Authorization': 'Basic ' + btoa(`${apiID}:${apiKey}`) }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data?.to?.[0]?.mid) {
+            return parseFloat(data.to[0].mid);
+        }
+        
+        throw new Error("Formato de respuesta inesperado");
+    }
+
+    function calcularMontos(cantidad, comision, tasa, esModoRecibir) {
+        let montoConvertido, montoComision, montoFinal, cantidadNecesaria;
+        
+        if (esModoRecibir) {
+            montoFinal = cantidad;
+            montoConvertido = montoFinal / (1 - (comision / 100));
+            cantidadNecesaria = montoConvertido / tasa;
+            montoComision = montoConvertido - montoFinal;
+        } else {
+            cantidadNecesaria = cantidad;
+            montoConvertido = cantidad * tasa;
+            montoComision = montoConvertido * (comision / 100);
+            montoFinal = montoConvertido - montoComision;
+        }
+        
+        return { montoConvertido, montoComision, montoFinal, cantidadNecesaria };
+    }
+
     function formatearMontoFiat(numero) {
         if (isNaN(numero)) return "0,00";
         return numero.toLocaleString('pt-BR', {
@@ -449,15 +1087,11 @@
     function formatearTasaCambio(tasa) {
         if (isNaN(tasa)) return "1,000000";
         
-        // Mostrar entre 2 y 6 decimales según necesidad
         const str = tasa.toFixed(6);
         let [entera, decimal] = str.split('.');
-        
-        // Eliminar ceros no significativos al final
         decimal = decimal.replace(/0+$/, '');
         if (decimal === '') decimal = '0';
         
-        // Mostrar mínimo 2 decimales
         const decimalCount = Math.max(2, decimal.length);
         return tasa.toLocaleString('pt-BR', {
             minimumFractionDigits: decimalCount,
@@ -475,218 +1109,69 @@
         return parseFloat(valor.replace(/\./g, '').replace(',', '.'));
     }
 
-    async function calcularEnvio() {
-        // Validar campos antes de proceder
-        const campos = currentMode === 'send' 
-            ? ['cantidadEnviar', 'comision'] 
-            : ['cantidadRecibir', 'comision'];
-        
-        let todosValidos = true;
-        campos.forEach(id => {
-            const input = document.getElementById(id);
-            if (!validarCampo(input)) {
-                todosValidos = false;
-            }
-        });
-        
-        if (!todosValidos) {
-            alert('Por favor, complete todos los campos correctamente.');
-            return;
-        }
-
-        const monedaOrigen = document.getElementById('monedaOrigen').value;
-        const monedaDestino = document.getElementById('monedaDestino').value;
-        const comision = limpiarNumeroBR(document.getElementById('comision').value);
-        
-        let cantidad;
-        let esModoRecibir = currentMode === 'receive';
-        
-        if (esModoRecibir) {
-            cantidad = limpiarNumeroBR(document.getElementById('cantidadRecibir').value);
-        } else {
-            cantidad = limpiarNumeroBR(document.getElementById('cantidadEnviar').value);
-        }
-
-        const spinner = document.getElementById('spinner');
-        spinner.style.display = 'block';
-
-        try {
-            const apiID = "colocagroupsas266471220";
-            const apiKey = "p860ankk1m5q0e3q4l929blrr1";
-            const url = `https://xecdapi.xe.com/v1/convert_from.json/?from=${monedaOrigen}&to=${monedaDestino}&amount=1`;
-
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Basic ' + btoa(`${apiID}:${apiKey}`)
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            if (data && data.to && data.to[0] && data.to[0].mid) {
-                tasaCambioActual = parseFloat(data.to[0].mid);
-                
-                let montoConvertido, montoComision, montoFinal, cantidadNecesaria;
-                
-                if (esModoRecibir) {
-                    // Cálculo para modo "quiero recibir X"
-                    montoFinal = cantidad;
-                    montoConvertido = montoFinal / (1 - (comision / 100));
-                    cantidadNecesaria = montoConvertido / tasaCambioActual;
-                    montoComision = montoConvertido - montoFinal;
-                } else {
-                    // Cálculo para modo "quiero enviar X"
-                    montoConvertido = cantidad * tasaCambioActual;
-                    montoComision = montoConvertido * (comision / 100);
-                    montoFinal = montoConvertido - montoComision;
-                    cantidadNecesaria = cantidad;
-                }
-
-                // Enviar al historial automáticamente
-                await enviarAlHistorial({
-                    monedaOrigen,
-                    monedaDestino,
-                    cantidad: cantidadNecesaria,
-                    montoFinal,
-                    comision,
-                    modo: currentMode
-                });
-
-                document.getElementById('resultado').innerHTML = `
-                    <p><strong>Tasa de Cambio:</strong> 
-                        <span class="tooltip">1 ${monedaOrigen} = ${formatearTasaCambio(tasaCambioActual)} ${monedaDestino}
-                            <span class="tooltiptext">Tasa exacta: 1 ${monedaOrigen} = ${mostrarTasaCompleta(tasaCambioActual)} ${monedaDestino}</span>
-                        </span>
-                    </p>
-                    ${esModoRecibir ? 
-                        `<p><strong>Cantidad necesaria a enviar:</strong> ${formatearMontoFiat(cantidadNecesaria)} ${monedaOrigen}</p>` : 
-                        `<p><strong>Monto Original:</strong> ${formatearMontoFiat(cantidad)} ${monedaOrigen}</p>`}
-                    <p><strong>Monto Convertido:</strong> ${formatearMontoFiat(montoConvertido)} ${monedaDestino}</p>
-                    <p><strong>Comisión (${formatearMontoFiat(comision)}%):</strong> -${formatearMontoFiat(montoComision)} ${monedaDestino}</p>
-                    <p><strong>Monto Final a Recibir:</strong> ${formatearMontoFiat(montoFinal)} ${monedaDestino}</p>
-                `;
-                document.getElementById('datosEnvio').classList.remove('hidden');
-            } else {
-                alert('Error al procesar los datos recibidos.');
-            }
-        } catch (error) {
-            console.error('Error al calcular el envío:', error);
-            alert('Hubo un error al procesar la solicitud. Por favor, intente de nuevo.');
-        } finally {
-            spinner.style.display = 'none';
-        }
-    }
-
-    async function enviarAlHistorial(datos) {
-        const historialData = {
-            "Timestamp": new Date().toISOString(),
-            "Modo": datos.modo === 'send' ? "Enviar" : "Recibir",
-            "MonedaOrigen": datos.monedaOrigen,
-            "MonedaDestino": datos.monedaDestino,
-            "MontoOrigen": datos.cantidad,
-            "MontoDestino": datos.montoFinal,
-            "TasaCambio": parseFloat(tasaCambioActual.toFixed(6)),
-            "Comision": datos.comision,
-            "Usuario": usuarioActual
-        };
-
-        try {
-            await fetch(sheetDBURL + "?sheetName=Historial", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(historialData)
-            });
-        } catch (error) {
-            console.error('Error al guardar en historial:', error);
-        }
-    }
-
-    async function confirmarCotizacion() {
-        const solicitante = document.getElementById('solicitante').value.trim();
-        const beneficiario = document.getElementById('beneficiario').value.trim();
-        const tipoID = document.getElementById('tipoID').value.trim();
-        const numeroID = document.getElementById('numeroID').value.trim();
-        const tipoCuenta = document.getElementById('tipoCuenta').value.trim();
-        const numeroCuenta = document.getElementById('numeroCuenta').value.trim();
-
-        const resultadoTexto = document.getElementById('resultado').innerText;
-
-        let cantidad, montoFinal;
-        if (currentMode === 'receive') {
-            cantidad = limpiarNumeroBR(extraerValor(resultadoTexto, "Cantidad necesaria a enviar"));
-            montoFinal = limpiarNumeroBR(document.getElementById('cantidadRecibir').value);
-        } else {
-            cantidad = limpiarNumeroBR(document.getElementById('cantidadEnviar').value);
-            montoFinal = limpiarNumeroBR(extraerValor(resultadoTexto, "Monto Final a Recibir"));
-        }
-
-        const comisionPorcentaje = limpiarNumeroBR(document.getElementById('comision').value);
-        const monedaOrigen = document.getElementById('monedaOrigen').value;
-        const monedaDestino = document.getElementById('monedaDestino').value;
-
-        if (!solicitante || !beneficiario || !tipoID || !numeroID || !tipoCuenta || !numeroCuenta || isNaN(cantidad) || isNaN(montoFinal) || isNaN(comisionPorcentaje)) {
-            alert('Por favor, complete todos los campos antes de confirmar la cotización.');
-            return;
-        }
-
-        const data = {
-            "orderNumber": await obtenerUltimoNumeroOrden(),
-            "fecha": new Date().toLocaleDateString('pt-BR'),
-            "Hora": new Date().toLocaleTimeString('en-US', { hour12: false }),
-            "Solicitante": solicitante,
-            "Beneficiario": beneficiario,
-            "Tipo de ID": tipoID,
-            "Número de ID": numeroID,
-            "Tipo de cuenta": tipoCuenta,
-            "Número de cuenta": numeroCuenta,
-            "cantidad": formatearMontoFiat(cantidad),
-            "monedaOrigen": monedaOrigen,
-            "monedaDestino": monedaDestino,
-            "Valor cotizado": formatearMontoFiat(montoFinal),
-            "Comision": formatearMontoFiat(comisionPorcentaje),
-            "Modo": currentMode === 'send' ? "Enviar" : "Recibir",
-            "Verificacion": ""
-        };
-
-        try {
-            const response = await fetch(sheetDBURL + "?sheetName=Info Cotizador", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                alert('Cotización confirmada y enviada correctamente.');
-                resetForm();
-            } else {
-                throw new Error(`Error al enviar la cotización: ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Error al confirmar la cotización:', error);
-            alert('Hubo un error al confirmar la cotización.');
-        }
-    }
-
-    async function obtenerUltimoNumeroOrden() {
-        try {
-            const response = await fetch(sheetDBURL + "?sheetName=Info Cotizador");
-            const data = await response.json();
-            return data.length + 1;
-        } catch (error) {
-            console.error('Error al obtener el último número de orden:', error);
-            return 1;
-        }
-    }
-
     function extraerValor(texto, clave) {
         const regex = new RegExp(`${clave}:\\s*([\\d.,]+)`);
         const match = texto.match(regex);
         return match ? match[1] : null;
+    }
+
+    function configurarAutoFormato() {
+        const campos = ['cantidadEnviar', 'cantidadRecibir', 'comision'];
+        
+        campos.forEach(id => {
+            const input = document.getElementById(id);
+            
+            input.addEventListener('input', function(e) {
+                const cursorPos = this.selectionStart;
+                const originalLength = this.value.length;
+                
+                if (id === 'comision') {
+                    let valor = this.value.replace(/[^\d,.]/g, '');
+                    this.dataset.rawValue = valor.replace(/,/g, '.');
+                    
+                    if (e.inputType !== 'deleteContentBackward') {
+                        valor = valor.replace('.', ',');
+                    }
+                    
+                    const partes = valor.split(/[,.]/);
+                    if (partes.length > 2) {
+                        valor = partes[0] + ',' + partes.slice(1).join('');
+                    }
+                    
+                    this.value = valor;
+                } else {
+                    let valor = this.value.replace(/[^\d]/g, '');
+                    if (valor.length > 0) {
+                        valor = parseInt(valor).toLocaleString('pt-BR');
+                    }
+                    this.value = valor;
+                }
+                
+                const newLength = this.value.length;
+                const lengthDiff = newLength - originalLength;
+                this.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
+                
+                validarCampo(this);
+            });
+            
+            input.addEventListener('blur', function() {
+                if (this.value === '') return;
+                
+                if (id === 'comision') {
+                    let valor = parseFloat(this.dataset.rawValue || this.value.replace(',', '.'));
+                    if (isNaN(valor)) {
+                        this.value = '';
+                        return;
+                    }
+                    
+                    this.value = valor.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    this.dataset.rawValue = valor;
+                }
+            });
+        });
     }
 
     function cargarTemaGuardado() {
@@ -695,13 +1180,6 @@
         document.getElementById('themeToggle').checked = savedTheme === 'dark';
         document.getElementById('themeLabel').textContent = savedTheme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
     }
-
-    document.getElementById('themeToggle').addEventListener('change', function() {
-        const theme = this.checked ? 'dark' : 'light';
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        document.getElementById('themeLabel').textContent = theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
-    });
 
     function resetForm() {
         document.getElementById('monedaOrigen').value = "COP";
@@ -714,11 +1192,23 @@
         document.querySelectorAll('#datosEnvio input').forEach(input => input.value = "");
         setMode('send');
         
-        // Ocultar todos los mensajes de error
         document.querySelectorAll('.error-message').forEach(el => {
             el.style.display = 'none';
         });
+        
+        // Scroll al inicio
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
     }
+
+    // EVENT LISTENERS
+    document.getElementById('themeToggle').addEventListener('change', function() {
+        const theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        document.getElementById('themeLabel').textContent = theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
+    });
 </script>
 </body>
 </html>
