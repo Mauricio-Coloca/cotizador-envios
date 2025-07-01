@@ -5,34 +5,59 @@
     <title>Cotizador de envíos</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
+        :root {
+            --bg-color: #f4f4f4;
+            --text-color: #13252B;
+            --container-bg: #fff;
+            --input-bg: #f9f9f9;
+            --border-color: #ddd;
+            --primary-color: #00B022;
+            --primary-hover: #038919;
+            --shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #f0f0f0;
+            --container-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
+            --border-color: #444;
+            --primary-color: #00a020;
+            --primary-hover: #007a18;
+            --shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #f4f4f4;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
-            background-color: #fff;
+            background-color: var(--container-bg);
             padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             width: 100%;
             max-width: 800px;
             text-align: center;
             position: relative;
+            transition: background-color 0.3s;
         }
         h1 {
-            color: #13252B;
+            color: var(--text-color);
             margin-bottom: 20px;
         }
         label {
             display: block;
             margin-top: 10px;
-            color: #173C4C;
+            color: var(--text-color);
             font-weight: bold;
             text-align: left;
         }
@@ -40,34 +65,36 @@
             width: 100%;
             padding: 15px;
             margin-top: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
             font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.3s, border-color 0.3s;
         }
         input, select {
-            color: #173C4C;
+            background-color: var(--input-bg);
+            color: var(--text-color);
         }
         button {
-            background-color: #00B022;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             cursor: pointer;
             margin-top: 15px;
         }
         button:hover {
-            background-color: #038919;
+            background-color: var(--primary-hover);
         }
         #resultado {
             margin-top: 20px;
             font-size: 1.2em;
-            color: #173C4C;
+            color: var(--text-color);
             text-align: left;
         }
         .spinner {
             display: none;
             margin: 20px auto;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #00B022;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -89,7 +116,7 @@
         }
         .form-section h2 {
             text-align: left;
-            color: #13252B;
+            color: var(--text-color);
             margin-bottom: 10px;
         }
         .aligned-input {
@@ -109,13 +136,14 @@
             color: #333;
             border-radius: 5px;
             cursor: pointer;
+            transition: all 0.3s;
         }
         .mode-btn.active {
-            background-color: #00B022;
+            background-color: var(--primary-color);
             color: white;
         }
         .error-message {
-            color: red;
+            color: #ff4444;
             font-size: 0.8em;
             margin-top: 5px;
             display: none;
@@ -123,7 +151,7 @@
         .tooltip {
             position: relative;
             display: inline-block;
-            border-bottom: 1px dotted #666;
+            border-bottom: 1px dotted var(--text-color);
             cursor: help;
         }
         .tooltip .tooltiptext {
@@ -147,10 +175,65 @@
             visibility: visible;
             opacity: 1;
         }
+        .theme-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <div class="container">
+        <div class="theme-switch">
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider round"></span>
+            </label>
+            <span id="themeLabel">Modo Oscuro</span>
+        </div>
+        
         <img src="Logo color horizontal.png" alt="Logo">
         <h1>Cotizador de envíos</h1>
         
@@ -244,11 +327,13 @@
     const sheetDBURL = 'https://sheetdb.io/api/v1/40v2uh03f9082';
     let currentMode = 'send'; // 'send' or 'receive'
     let tasaCambioActual = 0;
+    let usuarioActual = "OP"; // Puedes cambiarlo o hacerlo dinámico
 
     // Configurar autoformato al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         configurarAutoFormato();
         setMode('send');
+        cargarTemaGuardado();
     });
 
     function setMode(mode) {
@@ -462,6 +547,16 @@
                     cantidadNecesaria = cantidad;
                 }
 
+                // Enviar al historial automáticamente
+                await enviarAlHistorial({
+                    monedaOrigen,
+                    monedaDestino,
+                    cantidad: cantidadNecesaria,
+                    montoFinal,
+                    comision,
+                    modo: currentMode
+                });
+
                 document.getElementById('resultado').innerHTML = `
                     <p><strong>Tasa de Cambio:</strong> 
                         <span class="tooltip">1 ${monedaOrigen} = ${formatearTasaCambio(tasaCambioActual)} ${monedaDestino}
@@ -484,6 +579,30 @@
             alert('Hubo un error al procesar la solicitud. Por favor, intente de nuevo.');
         } finally {
             spinner.style.display = 'none';
+        }
+    }
+
+    async function enviarAlHistorial(datos) {
+        const historialData = {
+            "Timestamp": new Date().toISOString(),
+            "Modo": datos.modo === 'send' ? "Enviar" : "Recibir",
+            "MonedaOrigen": datos.monedaOrigen,
+            "MonedaDestino": datos.monedaDestino,
+            "MontoOrigen": datos.cantidad,
+            "MontoDestino": datos.montoFinal,
+            "TasaCambio": parseFloat(tasaCambioActual.toFixed(6)),
+            "Comision": datos.comision,
+            "Usuario": usuarioActual
+        };
+
+        try {
+            await fetch(sheetDBURL + "?sheetName=Historial", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(historialData)
+            });
+        } catch (error) {
+            console.error('Error al guardar en historial:', error);
         }
     }
 
@@ -510,9 +629,6 @@
         const monedaOrigen = document.getElementById('monedaOrigen').value;
         const monedaDestino = document.getElementById('monedaDestino').value;
 
-        const fecha = new Date().toLocaleDateString('pt-BR');
-        const hora = new Date().toLocaleTimeString('en-US', { hour12: false });
-
         if (!solicitante || !beneficiario || !tipoID || !numeroID || !tipoCuenta || !numeroCuenta || isNaN(cantidad) || isNaN(montoFinal) || isNaN(comisionPorcentaje)) {
             alert('Por favor, complete todos los campos antes de confirmar la cotización.');
             return;
@@ -520,8 +636,8 @@
 
         const data = {
             "orderNumber": await obtenerUltimoNumeroOrden(),
-            "fecha": fecha,
-            "Hora": hora,
+            "fecha": new Date().toLocaleDateString('pt-BR'),
+            "Hora": new Date().toLocaleTimeString('en-US', { hour12: false }),
             "Solicitante": solicitante,
             "Beneficiario": beneficiario,
             "Tipo de ID": tipoID,
@@ -533,12 +649,12 @@
             "monedaDestino": monedaDestino,
             "Valor cotizado": formatearMontoFiat(montoFinal),
             "Comision": formatearMontoFiat(comisionPorcentaje),
-            "Modo": currentMode,
+            "Modo": currentMode === 'send' ? "Enviar" : "Recibir",
             "Verificacion": ""
         };
 
         try {
-            const response = await fetch(sheetDBURL, {
+            const response = await fetch(sheetDBURL + "?sheetName=Info Cotizador", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -558,7 +674,7 @@
 
     async function obtenerUltimoNumeroOrden() {
         try {
-            const response = await fetch(sheetDBURL);
+            const response = await fetch(sheetDBURL + "?sheetName=Info Cotizador");
             const data = await response.json();
             return data.length + 1;
         } catch (error) {
@@ -572,6 +688,20 @@
         const match = texto.match(regex);
         return match ? match[1] : null;
     }
+
+    function cargarTemaGuardado() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeToggle').checked = savedTheme === 'dark';
+        document.getElementById('themeLabel').textContent = savedTheme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
+    }
+
+    document.getElementById('themeToggle').addEventListener('change', function() {
+        const theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        document.getElementById('themeLabel').textContent = theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
+    });
 
     function resetForm() {
         document.getElementById('monedaOrigen').value = "COP";
