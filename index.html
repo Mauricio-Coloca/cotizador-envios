@@ -754,11 +754,14 @@
         // Formatear el porcentaje de comisión (reemplazar punto por coma)
         const comisionFormateada = comision.toString().replace('.', ',');
         
+        // Obtener la tasa de cambio en formato más entendible
+        const tasaDisplay = formatearTasaCambioEntendible(monedaOrigen, monedaDestino, tasaCambioActual);
+        
         // Crear contenido HTML directamente
         resultadoDiv.innerHTML = `
             <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 15px;">📊 Resultado de la Cotización</h3>
             <p><strong>Operador:</strong> ${operadorActual?.nombre || 'No identificado'}</p>
-            <p><strong>💱 Tasa de Cambio:</strong> 1 ${monedaOrigen} = ${formatearTasaCambio(tasaCambioActual)} ${monedaDestino}</p>
+            <p><strong>💱 Tasa de Cambio:</strong> ${tasaDisplay}</p>
             ${currentMode === 'receive' ? 
                 `<p><strong>📤 Cantidad necesaria a enviar:</strong> <span class="monto-final">${formatearMontoFiat(cantidadNecesaria)} ${monedaOrigen}</span></p>
                  <p><strong>📥 Monto que recibirá:</strong> ${formatearMontoFiat(cantidad)} ${monedaDestino}</p>` : 
@@ -770,6 +773,39 @@
                 `${formatearMontoFiat(montoFinal)} ${monedaDestino}` : 
                 `<span class="monto-final">${formatearMontoFiat(montoFinal)} ${monedaDestino}</span>`}</p>
         `;
+    }
+
+    // Nueva función para formatear tasas de cambio de forma más entendible
+    function formatearTasaCambioEntendible(monedaOrigen, monedaDestino, tasa) {
+        // Definir monedas fuertes que siempre serán referencia
+        const monedasFuertes = ['USD', 'EUR'];
+        
+        // Si alguna de las monedas es fuerte, usar esa como referencia
+        if (monedasFuertes.includes(monedaOrigen)) {
+            return `1 ${monedaOrigen} = ${formatearTasaCambio(tasa)} ${monedaDestino}`;
+        }
+        
+        if (monedasFuertes.includes(monedaDestino)) {
+            const tasaInvertida = 1 / tasa;
+            return `1 ${monedaDestino} = ${formatearTasaCambio(tasaInvertida)} ${monedaOrigen}`;
+        }
+        
+        // Si ninguna es fuerte, determinar cuál tiene mayor valor (menor tasa)
+        // Para esto necesitamos obtener tasas relativas a una moneda fuerte
+        // Por simplicidad, asumiremos que USD y EUR son siempre mayores que las otras
+        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', 'ARS'];
+        
+        if (monedasLatam.includes(monedaOrigen) && monedasLatam.includes(monedaDestino)) {
+            // Ambas son latinoamericanas, mostrar en ambos formatos para claridad
+            const tasaInvertida = 1 / tasa;
+            return `
+                1 ${monedaOrigen} = ${formatearTasaCambio(tasa)} ${monedaDestino}<br>
+                1 ${monedaDestino} = ${formatearTasaCambio(tasaInvertida)} ${monedaOrigen}
+            `;
+        }
+        
+        // Por defecto, mostrar la tasa original
+        return `1 ${monedaOrigen} = ${formatearTasaCambio(tasa)} ${monedaDestino}`;
     }
 
     async function guardarCotizacion(datos) {
