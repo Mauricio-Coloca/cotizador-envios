@@ -882,6 +882,16 @@
     }
 
 async function obtenerTasaCambio(origen, destino) {
+    if (!origen || !destino) {
+    console.warn("Par inválido (select vacío). Cancelado.");
+    return 1;
+}
+
+if (origen === destino) {
+    console.warn(`Par idéntico ${origen} → ${destino}. No se llama a la API.`);
+    return 1;
+}
+
     try {
         // Si las monedas son iguales, retornar 1 directamente
         if (origen === destino) return 1;
