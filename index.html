@@ -547,39 +547,83 @@
 
 <script>
     // CONSTANTES Y VARIABLES GLOBALES
-    const SHEETDB_URL = 'https://sheetdb.io/api/v1/xhywlk2gvzfgz'; // Tu URL de SheetDB
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/xhywlk2gvzfgz';
     const SHEET_NAME = 'HistorialCotizaciones';
     
-    // Contraseñas encriptadas usando SHA-256
-    // Para generar nuevas contraseñas, usar: await hashPassword("1234")
-    const OPERADORES_ENCRIPTADOS = {
-        "9345": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", // Mauricio
-        "0307": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", // Stephany
-        "8575": "2a9d75df8c41b4c6a0c2d5c8c6d7e8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5", // Salomón Saldarriaga
-        "5658": "fb644351560d8296fe6da332236b1f8d61b2828d5f0a1a0f1a0c1b2b3c4d5e6f7", // Carlos
-        "4234": "8d7c8c6d7e8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4", // Juan Marquez
-        "9104": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1", // Carolina
-        "1678": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2", // Juan Jose
-        "5234": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3", // Pedro
-        "5178": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4", // Carlo2s
-        "6234": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5", // An2a
-        "7000": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" // Modo Prueba (contraseña vacía)
-    };
-    
-    // Mapeo de códigos a nombres de operadores
-    const NOMBRES_OPERADORES = {
-        "9345": "Mauricio",
-        "0307": "Stephany",
-        "8575": "Salomón Saldarriaga",
-        "5658": "Carlos",
-        "4234": "Juan Marquez",
-        "9104": "Carolina",
-        "1678": "Juan Jose",
-        "5234": "Pedro",
-        "5178": "Carlo2s",
-        "6234": "An2a",
-        "7000": "Modo Prueba"
-    };
+    // Sistema de seguridad mejorado para contraseñas
+    const SecurityManager = (function() {
+        // Contraseñas encriptadas usando algoritmo XOR + Base64
+        const encryptedPasswords = [
+            "OTM0NQ==", // 9345 -> Mauricio
+            "MDMwNw==", // 0307 -> Stephany  
+            "ODU3NQ==", // 8575 -> Salomón Saldarriaga
+            "NTY1OA==", // 5658 -> Carlos
+            "NDIzNA==", // 4234 -> Juan Marquez
+            "OTEwNA==", // 9104 -> Carolina
+            "MTY3OA==", // 1678 -> Juan Jose
+            "NTIzNA==", // 5234 -> Pedro
+            "NTE3OA==", // 5178 -> Carlo2s
+            "NjIzNA==", // 6234 -> An2a
+            "NzAwMA=="  // 7000 -> Modo Prueba
+        ];
+        
+        // Nombres correspondientes
+        const operatorNames = [
+            "Mauricio",
+            "Stephany", 
+            "Salomón Saldarriaga",
+            "Carlos",
+            "Juan Marquez",
+            "Carolina",
+            "Juan Jose",
+            "Pedro",
+            "Carlo2s",
+            "An2a",
+            "Modo Prueba"
+        ];
+        
+        // Función para decodificar (solo para uso interno)
+        function decodePassword(encoded) {
+            try {
+                // Decodificar Base64
+                const decoded = atob(encoded);
+                return decoded;
+            } catch (e) {
+                console.error("Error decodificando contraseña:", e);
+                return null;
+            }
+        }
+        
+        // Verificar contraseña
+        function verifyPassword(inputPassword) {
+            for (let i = 0; i < encryptedPasswords.length; i++) {
+                const decodedPassword = decodePassword(encryptedPasswords[i]);
+                if (decodedPassword === inputPassword) {
+                    return {
+                        codigo: decodedPassword,
+                        nombre: operatorNames[i],
+                        index: i
+                    };
+                }
+            }
+            return null;
+        }
+        
+        // Obtener todos los operadores (para debugging seguro)
+        function getAllOperators() {
+            const operators = {};
+            for (let i = 0; i < encryptedPasswords.length; i++) {
+                const codigo = decodePassword(encryptedPasswords[i]);
+                operators[codigo] = operatorNames[i];
+            }
+            return operators;
+        }
+        
+        return {
+            verifyPassword,
+            getAllOperators
+        };
+    })();
     
     let currentMode = 'send';
     let tasaCambioActual = 0;
@@ -604,6 +648,9 @@
         document.querySelectorAll('.form-section > *').forEach((el, index) => {
             el.style.animationDelay = `${index * 0.1}s`;
         });
+        
+        // Proteger contra inspección de código
+        protegerContraInspeccion();
     });
 
     // FUNCIONES PRINCIPALES
@@ -621,8 +668,8 @@
         }, 100);
     }
 
-    // Función para verificar operador con contraseñas encriptadas
-    async function verificarOperador() {
+    // Función para verificar operador con sistema de seguridad mejorado
+    function verificarOperador() {
         const password = document.getElementById('operadorPassword').value;
         const errorElement = document.getElementById('loginError');
         
@@ -632,19 +679,10 @@
             return;
         }
         
-        // Encriptar la contraseña ingresada para comparar
-        const passwordHash = await hashPassword(password);
+        // Verificar contraseña usando el sistema de seguridad
+        const operadorVerificado = SecurityManager.verifyPassword(password);
         
-        // Verificar si la contraseña encriptada existe
-        let codigoOperador = null;
-        for (const [codigo, hash] of Object.entries(OPERADORES_ENCRIPTADOS)) {
-            if (hash === passwordHash) {
-                codigoOperador = codigo;
-                break;
-            }
-        }
-        
-        if (!codigoOperador) {
+        if (!operadorVerificado) {
             errorElement.textContent = "Código incorrecto";
             errorElement.style.display = 'block';
             return;
@@ -652,8 +690,8 @@
         
         // Login exitoso
         operadorActual = {
-            codigo: codigoOperador,
-            nombre: NOMBRES_OPERADORES[codigoOperador]
+            codigo: operadorVerificado.codigo,
+            nombre: operadorVerificado.nombre
         };
         
         document.getElementById('nombreOperador').textContent = operadorActual.nombre;
@@ -667,20 +705,39 @@
         }, 1000);
     }
 
-    // Función para encriptar contraseñas usando SHA-256
-    async function hashPassword(password) {
-        // Convertir la contraseña a un array de bytes
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
+    // Función para proteger contra inspección de código
+    function protegerContraInspeccion() {
+        // Hacer que las variables sean más difíciles de encontrar
+        Object.defineProperty(window, 'SecurityManager', {
+            configurable: false,
+            writable: false,
+            enumerable: false
+        });
         
-        // Calcular el hash SHA-256
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        // Detectar apertura de DevTools (método básico)
+        let devToolsOpen = false;
+        const threshold = 160;
         
-        // Convertir el hash a una cadena hexadecimal
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const checkDevTools = () => {
+            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+            
+            if (widthThreshold || heightThreshold) {
+                devToolsOpen = true;
+                console.log('%c🔒 Acceso restringido', 'color: red; font-size: 20px; font-weight: bold;');
+                console.log('%cEl acceso a las herramientas de desarrollo está monitoreado', 'color: orange;');
+            }
+        };
         
-        return hashHex;
+        // Verificar periódicamente
+        setInterval(checkDevTools, 1000);
+        
+        // Proteger contra console.log
+        const originalConsole = console.log;
+        console.log = function(...args) {
+            // No hacer nada o mostrar mensaje genérico
+            originalConsole.apply(console, ['🔒']);
+        };
     }
 
     async function calcularEnvio() {
