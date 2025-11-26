@@ -881,46 +881,54 @@
         }
     }
 
-    async function obtenerTasaCambio(origen, destino) {
-        try {
-            // Si las monedas son iguales, retornar 1 directamente
-            if (origen === destino) return 1;
+async function obtenerTasaCambio(origen, destino) {
+    try {
+        // Si las monedas son iguales, retornar 1 directamente
+        if (origen === destino) return 1;
 
-            const apiID = "colocagroupsas266471220";
-            const apiKey = "ursp7kjvd8qi8ti53uvvhnqr5u";
-            const url = `https://xecdapi.xe.com/v1/convert_from.json/?from=${origen}&to=${destino}&amount=1`;
+        const apiKey = "YEg9kRyNneuyPD8RoCHxma6e0sVtMr89trA26LdtnXyswzrA3AlvPtgO1RPi";
+        const url = "https://api.colocapay.com/api/v1/price";
 
-            console.log("Obteniendo tasa de cambio de:", url);
-            
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: { 'Authorization': 'Basic ' + btoa(`${apiID}:${apiKey}`) }
-            });
+        console.log("Obteniendo tasa de cambio Coloca:", origen, destino);
 
-            if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.statusText}`);
-            }
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "x-api-key": apiKey,
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                origin: origen,
+                destination: destino,
+                amount: 1
+            })
+        });
 
-            const data = await response.json();
-            
-            if (!data?.to?.[0]?.mid) {
-                throw new Error("Formato de respuesta inesperado");
-            }
-
-            const tasa = parseFloat(data.to[0].mid);
-            
-            // Validar que la tasa sea razonable
-            if (tasa <= 0) {
-                throw new Error(`Tasa de cambio inválida: ${tasa}`);
-            }
-            
-            return parseFloat(tasa.toFixed(6));
-            
-        } catch (error) {
-            console.error("Error al obtener tasa:", error);
-            throw new Error("No se pudo obtener la tasa de cambio. Intente nuevamente.");
+        if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.statusText}`);
         }
+
+        const data = await response.json();
+
+        if (data.status !== "success") {
+            throw new Error("Error en respuesta de API Coloca");
+        }
+
+        const rate = parseFloat(data.price.rate);
+
+        if (isNaN(rate) || rate <= 0) {
+            throw new Error(`Tasa inválida: ${rate}`);
+        }
+
+        return rate;
+
+    } catch (error) {
+        console.error("Error al obtener la tasa de Coloca:", error);
+        throw new Error("No se pudo obtener la tasa de cambio. Intente nuevamente.");
     }
+}
+
 
     function mostrarError(mensaje) {
         const resultado = document.getElementById('resultado');
