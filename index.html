@@ -992,12 +992,21 @@ async function obtenerTasaCambio(origen, destino) {
         return {
             monedaOrigen: document.getElementById('monedaOrigen').value,
             monedaDestino: document.getElementById('monedaDestino').value,
-            comision: limpiarNumeroBR(document.getElementById('comision').value),
-            cantidad: limpiarNumeroBR(
-                currentMode === 'receive' 
-                    ? document.getElementById('cantidadRecibir').value 
-                    : document.getElementById('cantidadEnviar').value
-            )
+            comision: parseFloat(
+    document.getElementById('comision').value
+    .replace(/\./g, '')
+    .replace(',', '.')
+    .trim()
+),
+            cantidad: parseFloat(
+    (currentMode === 'receive'
+        ? document.getElementById('cantidadRecibir').value
+        : document.getElementById('cantidadEnviar').value
+    )
+    .replace(/\./g, '')     // borrar miles
+    .replace(',', '.')      // pasar a punto
+    .trim()                 // eliminar espacios
+)
         };
     }
 
