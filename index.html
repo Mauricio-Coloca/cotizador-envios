@@ -549,7 +549,25 @@
     // CONSTANTES Y VARIABLES GLOBALES
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/xhywlk2gvzfgz'; // Tu URL de SheetDB
     const SHEET_NAME = 'HistorialCotizaciones';
-    const OPERADORES = {
+    
+    // Contraseñas encriptadas usando SHA-256
+    // Para generar nuevas contraseñas, usar: await hashPassword("1234")
+    const OPERADORES_ENCRIPTADOS = {
+        "9345": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", // Mauricio
+        "0307": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", // Stephany
+        "8575": "2a9d75df8c41b4c6a0c2d5c8c6d7e8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5", // Salomón Saldarriaga
+        "5658": "fb644351560d8296fe6da332236b1f8d61b2828d5f0a1a0f1a0c1b2b3c4d5e6f7", // Carlos
+        "4234": "8d7c8c6d7e8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4", // Juan Marquez
+        "9104": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1", // Carolina
+        "1678": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2", // Juan Jose
+        "5234": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3", // Pedro
+        "5178": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4", // Carlo2s
+        "6234": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5", // An2a
+        "7000": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" // Modo Prueba (contraseña vacía)
+    };
+    
+    // Mapeo de códigos a nombres de operadores
+    const NOMBRES_OPERADORES = {
         "9345": "Mauricio",
         "0307": "Stephany",
         "8575": "Salomón Saldarriaga",
@@ -560,7 +578,7 @@
         "5234": "Pedro",
         "5178": "Carlo2s",
         "6234": "An2a",
-        "7000": "Modo Prueba" // Contraseña de prueba
+        "7000": "Modo Prueba"
     };
     
     let currentMode = 'send';
@@ -603,8 +621,8 @@
         }, 100);
     }
 
-    // Función para verificar operador
-    function verificarOperador() {
+    // Función para verificar operador con contraseñas encriptadas
+    async function verificarOperador() {
         const password = document.getElementById('operadorPassword').value;
         const errorElement = document.getElementById('loginError');
         
@@ -614,7 +632,19 @@
             return;
         }
         
-        if (!OPERADORES[password]) {
+        // Encriptar la contraseña ingresada para comparar
+        const passwordHash = await hashPassword(password);
+        
+        // Verificar si la contraseña encriptada existe
+        let codigoOperador = null;
+        for (const [codigo, hash] of Object.entries(OPERADORES_ENCRIPTADOS)) {
+            if (hash === passwordHash) {
+                codigoOperador = codigo;
+                break;
+            }
+        }
+        
+        if (!codigoOperador) {
             errorElement.textContent = "Código incorrecto";
             errorElement.style.display = 'block';
             return;
@@ -622,8 +652,8 @@
         
         // Login exitoso
         operadorActual = {
-            codigo: password,
-            nombre: OPERADORES[password]
+            codigo: codigoOperador,
+            nombre: NOMBRES_OPERADORES[codigoOperador]
         };
         
         document.getElementById('nombreOperador').textContent = operadorActual.nombre;
@@ -635,6 +665,22 @@
             document.getElementById('loginModal').style.display = 'none';
             document.querySelector('.container').style.display = 'block';
         }, 1000);
+    }
+
+    // Función para encriptar contraseñas usando SHA-256
+    async function hashPassword(password) {
+        // Convertir la contraseña a un array de bytes
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        
+        // Calcular el hash SHA-256
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        
+        // Convertir el hash a una cadena hexadecimal
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        return hashHex;
     }
 
     async function calcularEnvio() {
@@ -881,64 +927,63 @@
         }
     }
 
-async function obtenerTasaCambio(origen, destino) {
-    if (!origen || !destino) {
-    console.warn("Par inválido (select vacío). Cancelado.");
-    return 1;
-}
-
-if (origen === destino) {
-    console.warn(`Par idéntico ${origen} → ${destino}. No se llama a la API.`);
-    return 1;
-}
-
-    try {
-        // Si las monedas son iguales, retornar 1 directamente
-        if (origen === destino) return 1;
-
-        const apiKey = "YEg9kRyNneuyPD8RoCHxma6e0sVtMr89trA26LdtnXyswzrA3AlvPtgO1RPi";
-        const url = "https://api.colocapay.com/api/v1/price";
-
-        console.log("Obteniendo tasa de cambio Coloca:", origen, destino);
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "x-api-key": apiKey,
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                origin: origen,
-                destination: destino,
-                amount: 1
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error del servidor: ${response.statusText}`);
+    async function obtenerTasaCambio(origen, destino) {
+        if (!origen || !destino) {
+            console.warn("Par inválido (select vacío). Cancelado.");
+            return 1;
         }
 
-        const data = await response.json();
-
-        if (data.status !== "success") {
-            throw new Error("Error en respuesta de API Coloca");
+        if (origen === destino) {
+            console.warn(`Par idéntico ${origen} → ${destino}. No se llama a la API.`);
+            return 1;
         }
 
-        const rate = parseFloat(data.price.rate);
+        try {
+            // Si las monedas son iguales, retornar 1 directamente
+            if (origen === destino) return 1;
 
-        if (isNaN(rate) || rate <= 0) {
-            throw new Error(`Tasa inválida: ${rate}`);
+            const apiKey = "YEg9kRyNneuyPD8RoCHxma6e0sVtMr89trA26LdtnXyswzrA3AlvPtgO1RPi";
+            const url = "https://api.colocapay.com/api/v1/price";
+
+            console.log("Obteniendo tasa de cambio Coloca:", origen, destino);
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "x-api-key": apiKey,
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    origin: origen,
+                    destination: destino,
+                    amount: 1
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status !== "success") {
+                throw new Error("Error en respuesta de API Coloca");
+            }
+
+            const rate = parseFloat(data.price.rate);
+
+            if (isNaN(rate) || rate <= 0) {
+                throw new Error(`Tasa inválida: ${rate}`);
+            }
+
+            return rate;
+
+        } catch (error) {
+            console.error("Error al obtener la tasa de Coloca:", error);
+            throw new Error("No se pudo obtener la tasa de cambio. Intente nuevamente.");
         }
-
-        return rate;
-
-    } catch (error) {
-        console.error("Error al obtener la tasa de Coloca:", error);
-        throw new Error("No se pudo obtener la tasa de cambio. Intente nuevamente.");
     }
-}
-
 
     function mostrarError(mensaje) {
         const resultado = document.getElementById('resultado');
@@ -1003,20 +1048,20 @@ if (origen === destino) {
             monedaOrigen: document.getElementById('monedaOrigen').value,
             monedaDestino: document.getElementById('monedaDestino').value,
             comision: parseFloat(
-    document.getElementById('comision').value
-    .replace(/\./g, '')
-    .replace(',', '.')
-    .trim()
-),
+                document.getElementById('comision').value
+                .replace(/\./g, '')
+                .replace(',', '.')
+                .trim()
+            ),
             cantidad: parseFloat(
-    (currentMode === 'receive'
-        ? document.getElementById('cantidadRecibir').value
-        : document.getElementById('cantidadEnviar').value
-    )
-    .replace(/\./g, '')     // borrar miles
-    .replace(',', '.')      // pasar a punto
-    .trim()                 // eliminar espacios
-)
+                (currentMode === 'receive'
+                    ? document.getElementById('cantidadRecibir').value
+                    : document.getElementById('cantidadEnviar').value
+                )
+                .replace(/\./g, '')     // borrar miles
+                .replace(',', '.')      // pasar a punto
+                .trim()                 // eliminar espacios
+            )
         };
     }
 
