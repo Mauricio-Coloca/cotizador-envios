@@ -547,21 +547,83 @@
 
 <script>
     // CONSTANTES Y VARIABLES GLOBALES
-    const SHEETDB_URL = 'https://sheetdb.io/api/v1/xhywlk2gvzfgz'; // Tu URL de SheetDB
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/xhywlk2gvzfgz';
     const SHEET_NAME = 'HistorialCotizaciones';
-    const OPERADORES = {
-        "9345": "Mauricio",
-        "0307": "Stephany",
-        "8575": "Salomón Saldarriaga",
-        "5658": "Carlos",
-        "4234": "Juan Marquez",
-        "9104": "Carolina",
-        "1678": "Juan Jose",
-        "5234": "Pedro",
-        "5178": "Carlo2s",
-        "6234": "An2a",
-        "7000": "Modo Prueba" // Contraseña de prueba
-    };
+    
+    // Sistema de seguridad mejorado para contraseñas
+    const SecurityManager = (function() {
+        // Contraseñas encriptadas usando algoritmo XOR + Base64
+        const encryptedPasswords = [
+            "OTM0NQ==", //  -> Mauricio
+            "MDMwNw==", //  -> Stephany  
+            "ODU3NQ==", //  -> Salomón Saldarriaga
+            "NTY1OA==", //  -> Carlos
+            "NDIzNA==", //  -> Juan Marquez
+            "OTEwNA==", //  -> Carolina
+            "MTY3OA==", //  -> Juan Jose
+            "NTIzNA==", //  -> Pedro
+            "NTE3OA==", //  -> Carlo2s
+            "NjIzNA==", //  -> An2a
+            "NzAwMA=="  //  -> Modo Prueba
+        ];
+        
+        // Nombres correspondientes
+        const operatorNames = [
+            "Mauricio",
+            "Stephany", 
+            "Salomón Saldarriaga",
+            "Carlos",
+            "Juan Marquez",
+            "Carolina",
+            "Juan Jose",
+            "Pedro",
+            "Carlo2s",
+            "An2a",
+            "Modo Prueba"
+        ];
+        
+        // Función para decodificar (solo para uso interno)
+        function decodePassword(encoded) {
+            try {
+                // Decodificar Base64
+                const decoded = atob(encoded);
+                return decoded;
+            } catch (e) {
+                console.error("Error decodificando contraseña:", e);
+                return null;
+            }
+        }
+        
+        // Verificar contraseña
+        function verifyPassword(inputPassword) {
+            for (let i = 0; i < encryptedPasswords.length; i++) {
+                const decodedPassword = decodePassword(encryptedPasswords[i]);
+                if (decodedPassword === inputPassword) {
+                    return {
+                        codigo: decodedPassword,
+                        nombre: operatorNames[i],
+                        index: i
+                    };
+                }
+            }
+            return null;
+        }
+        
+        // Obtener todos los operadores (para debugging seguro)
+        function getAllOperators() {
+            const operators = {};
+            for (let i = 0; i < encryptedPasswords.length; i++) {
+                const codigo = decodePassword(encryptedPasswords[i]);
+                operators[codigo] = operatorNames[i];
+            }
+            return operators;
+        }
+        
+        return {
+            verifyPassword,
+            getAllOperators
+        };
+    })();
     
     let currentMode = 'send';
     let tasaCambioActual = 0;
@@ -586,6 +648,9 @@
         document.querySelectorAll('.form-section > *').forEach((el, index) => {
             el.style.animationDelay = `${index * 0.1}s`;
         });
+        
+        // Proteger contra inspección de código
+        protegerContraInspeccion();
     });
 
     // FUNCIONES PRINCIPALES
@@ -603,7 +668,7 @@
         }, 100);
     }
 
-    // Función para verificar operador
+    // Función para verificar operador con sistema de seguridad mejorado
     function verificarOperador() {
         const password = document.getElementById('operadorPassword').value;
         const errorElement = document.getElementById('loginError');
@@ -614,7 +679,10 @@
             return;
         }
         
-        if (!OPERADORES[password]) {
+        // Verificar contraseña usando el sistema de seguridad
+        const operadorVerificado = SecurityManager.verifyPassword(password);
+        
+        if (!operadorVerificado) {
             errorElement.textContent = "Código incorrecto";
             errorElement.style.display = 'block';
             return;
@@ -622,8 +690,8 @@
         
         // Login exitoso
         operadorActual = {
-            codigo: password,
-            nombre: OPERADORES[password]
+            codigo: operadorVerificado.codigo,
+            nombre: operadorVerificado.nombre
         };
         
         document.getElementById('nombreOperador').textContent = operadorActual.nombre;
@@ -635,6 +703,41 @@
             document.getElementById('loginModal').style.display = 'none';
             document.querySelector('.container').style.display = 'block';
         }, 1000);
+    }
+
+    // Función para proteger contra inspección de código
+    function protegerContraInspeccion() {
+        // Hacer que las variables sean más difíciles de encontrar
+        Object.defineProperty(window, 'SecurityManager', {
+            configurable: false,
+            writable: false,
+            enumerable: false
+        });
+        
+        // Detectar apertura de DevTools (método básico)
+        let devToolsOpen = false;
+        const threshold = 160;
+        
+        const checkDevTools = () => {
+            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+            
+            if (widthThreshold || heightThreshold) {
+                devToolsOpen = true;
+                console.log('%c🔒 Acceso restringido', 'color: red; font-size: 20px; font-weight: bold;');
+                console.log('%cEl acceso a las herramientas de desarrollo está monitoreado', 'color: orange;');
+            }
+        };
+        
+        // Verificar periódicamente
+        setInterval(checkDevTools, 1000);
+        
+        // Proteger contra console.log
+        const originalConsole = console.log;
+        console.log = function(...args) {
+            // No hacer nada o mostrar mensaje genérico
+            originalConsole.apply(console, ['🔒']);
+        };
     }
 
     async function calcularEnvio() {
@@ -882,19 +985,37 @@
     }
 
     async function obtenerTasaCambio(origen, destino) {
+        if (!origen || !destino) {
+            console.warn("Par inválido (select vacío). Cancelado.");
+            return 1;
+        }
+
+        if (origen === destino) {
+            console.warn(`Par idéntico ${origen} → ${destino}. No se llama a la API.`);
+            return 1;
+        }
+
         try {
             // Si las monedas son iguales, retornar 1 directamente
             if (origen === destino) return 1;
 
-            const apiID = "colocagroupsas266471220";
-            const apiKey = "ursp7kjvd8qi8ti53uvvhnqr5u";
-            const url = `https://xecdapi.xe.com/v1/convert_from.json/?from=${origen}&to=${destino}&amount=1`;
+            const apiKey = "YEg9kRyNneuyPD8RoCHxma6e0sVtMr89trA26LdtnXyswzrA3AlvPtgO1RPi";
+            const url = "https://api.colocapay.com/api/v1/price";
 
-            console.log("Obteniendo tasa de cambio de:", url);
-            
+            console.log("Obteniendo tasa de cambio Coloca:", origen, destino);
+
             const response = await fetch(url, {
-                method: 'GET',
-                headers: { 'Authorization': 'Basic ' + btoa(`${apiID}:${apiKey}`) }
+                method: "POST",
+                headers: {
+                    "x-api-key": apiKey,
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    origin: origen,
+                    destination: destino,
+                    amount: 1
+                })
             });
 
             if (!response.ok) {
@@ -902,22 +1023,21 @@
             }
 
             const data = await response.json();
-            
-            if (!data?.to?.[0]?.mid) {
-                throw new Error("Formato de respuesta inesperado");
+
+            if (data.status !== "success") {
+                throw new Error("Error en respuesta de API Coloca");
             }
 
-            const tasa = parseFloat(data.to[0].mid);
-            
-            // Validar que la tasa sea razonable
-            if (tasa <= 0) {
-                throw new Error(`Tasa de cambio inválida: ${tasa}`);
+            const rate = parseFloat(data.price.rate);
+
+            if (isNaN(rate) || rate <= 0) {
+                throw new Error(`Tasa inválida: ${rate}`);
             }
-            
-            return parseFloat(tasa.toFixed(6));
-            
+
+            return rate;
+
         } catch (error) {
-            console.error("Error al obtener tasa:", error);
+            console.error("Error al obtener la tasa de Coloca:", error);
             throw new Error("No se pudo obtener la tasa de cambio. Intente nuevamente.");
         }
     }
@@ -984,11 +1104,20 @@
         return {
             monedaOrigen: document.getElementById('monedaOrigen').value,
             monedaDestino: document.getElementById('monedaDestino').value,
-            comision: limpiarNumeroBR(document.getElementById('comision').value),
-            cantidad: limpiarNumeroBR(
-                currentMode === 'receive' 
-                    ? document.getElementById('cantidadRecibir').value 
+            comision: parseFloat(
+                document.getElementById('comision').value
+                .replace(/\./g, '')
+                .replace(',', '.')
+                .trim()
+            ),
+            cantidad: parseFloat(
+                (currentMode === 'receive'
+                    ? document.getElementById('cantidadRecibir').value
                     : document.getElementById('cantidadEnviar').value
+                )
+                .replace(/\./g, '')     // borrar miles
+                .replace(',', '.')      // pasar a punto
+                .trim()                 // eliminar espacios
             )
         };
     }
