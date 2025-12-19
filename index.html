@@ -552,6 +552,35 @@
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/2rsg2qokry3r3';
     const SHEET_NAME = 'HistorialCotizaciones';
     
+    // FUNCIONES DE CONVERSIÓN NUMÉRICA - CORREGIDAS
+    function peFloat(valor) {
+        if (typeof valor === 'number') return valor;
+        if (!valor || valor === '') return NaN;
+        
+        // Remover todos los separadores de miles (puntos) y reemplazar coma decimal por punto
+        const limpio = String(valor)
+            .replace(/\./g, '')  // Eliminar puntos (separadores de miles)
+            .replace(',', '.')   // Reemplazar coma decimal por punto
+            .trim();
+        
+        const resultado = parseFloat(limpio);
+        return isNaN(resultado) ? NaN : resultado;
+    }
+
+    function peInt(valor) {
+        if (typeof valor === 'number') return Math.round(valor);
+        if (!valor || valor === '') return NaN;
+        
+        // Para enteros, solo eliminamos los separadores de miles
+        const limpio = String(valor)
+            .replace(/\./g, '')  // Eliminar puntos (separadores de miles)
+            .replace(',', '')    // Eliminar comas (no queremos decimales para enteros)
+            .trim();
+        
+        const resultado = parseInt(limpio, 10);
+        return isNaN(resultado) ? NaN : resultado;
+    }
+    
     // Sistema de seguridad mejorado para contraseñas
     const SecurityManager = (function() {
         // Contraseñas encriptadas usando algoritmo XOR + Base64
@@ -898,7 +927,7 @@
         // Si ninguna es fuerte, determinar cuál tiene mayor valor (menor tasa)
         // Para esto necesitamos obtener tasas relativas a una moneda fuerte
         // Por simplicidad, asumiremos que USD y EUR son siempre mayores que las otras
-        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', ''];
+        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', 'CRC', 'ARS'];
         
         if (monedasLatam.includes(monedaOrigen) && monedasLatam.includes(monedaDestino)) {
             // Ambas son latinoamericanas, mostrar en ambos formatos para claridad
@@ -1093,7 +1122,8 @@
             const valorNumerico = peFloat(input.dataset.rawValue || value.replace(',', '.'));
             isValid = !isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 100;
         } else {
-            const valorNumerico = peInt(value.replace(/\./g, ''));
+            // CORRECCIÓN: Cambiado de peInt a peFloat para aceptar decimales
+            const valorNumerico = peFloat(value.replace(/\./g, '').replace(',', '.'));
             isValid = !isNaN(valorNumerico) && valorNumerico > 0;
         }
         
@@ -1165,11 +1195,6 @@
             minimumFractionDigits: decimalCount,
             maximumFractionDigits: 6
         });
-    }
-
-    function limpiarNumeroBR(valor) {
-        if (!valor) return NaN;
-        return peFloat(valor.replace(/\./g, '').replace(',', '.'));
     }
 
     function configurarAutoFormato() {
