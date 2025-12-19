@@ -499,7 +499,7 @@
                 <option value="EUR">Euro (EUR)</option>
                 <option value="HKD">Dólar de Hong Kong (HKD)</option>
                 <option value="CNY">Yuan Chino (CNY)</option>
-                <option value="CRC">Colón Costarricense (CRC)</option>
+                <option value="CRC">Colon (CRC)</option>
                 <option value="ARS">Peso Argentino (ARS)</option>
             </select>
             <label for="monedaDestino">Moneda de Destino:</label>
@@ -515,7 +515,7 @@
                 <option value="EUR">Euro (EUR)</option>
                 <option value="HKD">Dólar de Hong Kong (HKD)</option>
                 <option value="CNY">Yuan Chino (CNY)</option>
-                <option value="CRC">Colón Costarricense (CRC)</option>
+                <option value="CRC">Colon (CRC)</option>
                 <option value="ARS">Peso Argentino (ARS)</option>
             </select>
             
@@ -551,35 +551,6 @@
     // CONSTANTES Y VARIABLES GLOBALES
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/2rsg2qokry3r3';
     const SHEET_NAME = 'HistorialCotizaciones';
-    
-    // FUNCIONES DE CONVERSIÓN NUMÉRICA - CORREGIDAS
-    function peFloat(valor) {
-        if (typeof valor === 'number') return valor;
-        if (!valor || valor === '') return NaN;
-        
-        // Remover todos los separadores de miles (puntos) y reemplazar coma decimal por punto
-        const limpio = String(valor)
-            .replace(/\./g, '')  // Eliminar puntos (separadores de miles)
-            .replace(',', '.')   // Reemplazar coma decimal por punto
-            .trim();
-        
-        const resultado = parseFloat(limpio);
-        return isNaN(resultado) ? NaN : resultado;
-    }
-
-    function peInt(valor) {
-        if (typeof valor === 'number') return Math.round(valor);
-        if (!valor || valor === '') return NaN;
-        
-        // Para enteros, solo eliminamos los separadores de miles
-        const limpio = String(valor)
-            .replace(/\./g, '')  // Eliminar puntos (separadores de miles)
-            .replace(',', '')    // Eliminar comas (no queremos decimales para enteros)
-            .trim();
-        
-        const resultado = parseInt(limpio, 10);
-        return isNaN(resultado) ? NaN : resultado;
-    }
     
     // Sistema de seguridad mejorado para contraseñas
     const SecurityManager = (function() {
@@ -835,7 +806,7 @@
                 montoOrigen: esModoRecibir ? cantidadNecesaria : cantidad,
                 montoDestino: montoFinal,
                 tasaCambio: tasaCambioActual,
-                comision: peFloat(comision),
+                comision: parseFloat(comision),
                 montoComision,
                 montoFinal
             });
@@ -927,7 +898,7 @@
         // Si ninguna es fuerte, determinar cuál tiene mayor valor (menor tasa)
         // Para esto necesitamos obtener tasas relativas a una moneda fuerte
         // Por simplicidad, asumiremos que USD y EUR son siempre mayores que las otras
-        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', 'CRC', 'ARS'];
+        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', 'ARS'];
         
         if (monedasLatam.includes(monedaOrigen) && monedasLatam.includes(monedaDestino)) {
             // Ambas son latinoamericanas, mostrar en ambos formatos para claridad
@@ -954,8 +925,8 @@
             }
 
             // Asegurar que los montos son números válidos
-            const montoOrigen = peFloat(datos.montoOrigen);
-            const montoDestino = peFloat(datos.montoDestino);
+            const montoOrigen = parseFloat(datos.montoOrigen);
+            const montoDestino = parseFloat(datos.montoDestino);
             if (isNaN(montoOrigen)) throw new Error("Monto origen inválido");
             if (isNaN(montoDestino)) throw new Error("Monto destino inválido");
 
@@ -974,10 +945,10 @@
                 "MonedaDestino": datos.monedaDestino,
                 "MontoOrigen": montoOrigen,
                 "MontoDestino": montoDestino,
-                "TasaCambio": peFloat(datos.tasaCambio.toFixed(6)),
-                "Comision": peFloat(datos.comision.toFixed(2)),
-                "MontoComision": peFloat(datos.montoComision.toFixed(2)),
-                "MontoFinal": peFloat(datos.montoFinal.toFixed(2)),
+                "TasaCambio": parseFloat(datos.tasaCambio.toFixed(6)),
+                "Comision": parseFloat(datos.comision.toFixed(2)),
+                "MontoComision": parseFloat(datos.montoComision.toFixed(2)),
+                "MontoFinal": parseFloat(datos.montoFinal.toFixed(2)),
                 "IPCliente": ipCliente || 'Desconocida'
             };
 
@@ -1059,7 +1030,7 @@
                 throw new Error("Error en respuesta de API Coloca");
             }
 
-            const rate = peFloat(data.price.rate);
+            const rate = parseFloat(data.price.rate);
 
             if (isNaN(rate) || rate <= 0) {
                 throw new Error(`Tasa inválida: ${rate}`);
@@ -1119,11 +1090,10 @@
         let isValid = true;
         
         if (input.id === 'comision') {
-            const valorNumerico = peFloat(input.dataset.rawValue || value.replace(',', '.'));
+            const valorNumerico = parseFloat(input.dataset.rawValue || value.replace(',', '.'));
             isValid = !isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 100;
         } else {
-            // CORRECCIÓN: Cambiado de peInt a peFloat para aceptar decimales
-            const valorNumerico = peFloat(value.replace(/\./g, '').replace(',', '.'));
+            const valorNumerico = parseInt(value.replace(/\./g, ''));
             isValid = !isNaN(valorNumerico) && valorNumerico > 0;
         }
         
@@ -1136,13 +1106,13 @@
         return {
             monedaOrigen: document.getElementById('monedaOrigen').value,
             monedaDestino: document.getElementById('monedaDestino').value,
-            comision: peFloat(
+            comision: parseFloat(
                 document.getElementById('comision').value
                 .replace(/\./g, '')
                 .replace(',', '.')
                 .trim()
             ),
-            cantidad: peFloat(
+            cantidad: parseFloat(
                 (currentMode === 'receive'
                     ? document.getElementById('cantidadRecibir').value
                     : document.getElementById('cantidadEnviar').value
@@ -1195,6 +1165,11 @@
             minimumFractionDigits: decimalCount,
             maximumFractionDigits: 6
         });
+    }
+
+    function limpiarNumeroBR(valor) {
+        if (!valor) return NaN;
+        return parseFloat(valor.replace(/\./g, '').replace(',', '.'));
     }
 
     function configurarAutoFormato() {
@@ -1255,7 +1230,7 @@
                 
                 // Formatear al perder el foco
                 if (id === 'cantidadEnviar' || id === 'cantidadRecibir') {
-                    const rawValue = peFloat(input.dataset.rawValue || input.value.replace(/\./g, '').replace(',', '.'));
+                    const rawValue = parseFloat(input.dataset.rawValue || input.value.replace(/\./g, '').replace(',', '.'));
                     
                     if (!isNaN(rawValue)) {
                         input.value = rawValue.toLocaleString('pt-BR', {
@@ -1267,7 +1242,7 @@
                         input.value = '';
                     }
                 } else if (id === 'comision') {
-                    let valor = peFloat(input.dataset.rawValue || input.value.replace(',', '.'));
+                    let valor = parseFloat(input.dataset.rawValue || input.value.replace(',', '.'));
                     if (isNaN(valor)) {
                         input.value = '';
                         return;
