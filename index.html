@@ -499,7 +499,7 @@
                 <option value="EUR">Euro (EUR)</option>
                 <option value="HKD">Dólar de Hong Kong (HKD)</option>
                 <option value="CNY">Yuan Chino (CNY)</option>
-                <option value="CNY">Colon (CRC)</option>
+                <option value="CNY">Colon (CRI)</option>
                 <option value="ARS">Peso Argentino (ARS)</option>
             </select>
             <label for="monedaDestino">Moneda de Destino:</label>
@@ -515,8 +515,8 @@
                 <option value="EUR">Euro (EUR)</option>
                 <option value="HKD">Dólar de Hong Kong (HKD)</option>
                 <option value="CNY">Yuan Chino (CNY)</option>
-                <option value="CNY">Colon (CRC)</option>
-                <option value="ARS">Peso Argentino (ARS)</option>
+                <option value="CNY">Colon (CRI)</option>
+                <option value="">Peso Argentino ()</option>
             </select>
             
             <div id="sendSection">
@@ -806,7 +806,7 @@
                 montoOrigen: esModoRecibir ? cantidadNecesaria : cantidad,
                 montoDestino: montoFinal,
                 tasaCambio: tasaCambioActual,
-                comision: parseFloat(comision),
+                comision: peFloat(comision),
                 montoComision,
                 montoFinal
             });
@@ -898,7 +898,7 @@
         // Si ninguna es fuerte, determinar cuál tiene mayor valor (menor tasa)
         // Para esto necesitamos obtener tasas relativas a una moneda fuerte
         // Por simplicidad, asumiremos que USD y EUR son siempre mayores que las otras
-        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', 'ARS'];
+        const monedasLatam = ['COP', 'BRL', 'MXN', 'CLP', 'PEN', 'PYG', 'UYU', ''];
         
         if (monedasLatam.includes(monedaOrigen) && monedasLatam.includes(monedaDestino)) {
             // Ambas son latinoamericanas, mostrar en ambos formatos para claridad
@@ -925,8 +925,8 @@
             }
 
             // Asegurar que los montos son números válidos
-            const montoOrigen = parseFloat(datos.montoOrigen);
-            const montoDestino = parseFloat(datos.montoDestino);
+            const montoOrigen = peFloat(datos.montoOrigen);
+            const montoDestino = peFloat(datos.montoDestino);
             if (isNaN(montoOrigen)) throw new Error("Monto origen inválido");
             if (isNaN(montoDestino)) throw new Error("Monto destino inválido");
 
@@ -945,10 +945,10 @@
                 "MonedaDestino": datos.monedaDestino,
                 "MontoOrigen": montoOrigen,
                 "MontoDestino": montoDestino,
-                "TasaCambio": parseFloat(datos.tasaCambio.toFixed(6)),
-                "Comision": parseFloat(datos.comision.toFixed(2)),
-                "MontoComision": parseFloat(datos.montoComision.toFixed(2)),
-                "MontoFinal": parseFloat(datos.montoFinal.toFixed(2)),
+                "TasaCambio": peFloat(datos.tasaCambio.toFixed(6)),
+                "Comision": peFloat(datos.comision.toFixed(2)),
+                "MontoComision": peFloat(datos.montoComision.toFixed(2)),
+                "MontoFinal": peFloat(datos.montoFinal.toFixed(2)),
                 "IPCliente": ipCliente || 'Desconocida'
             };
 
@@ -1030,7 +1030,7 @@
                 throw new Error("Error en respuesta de API Coloca");
             }
 
-            const rate = parseFloat(data.price.rate);
+            const rate = peFloat(data.price.rate);
 
             if (isNaN(rate) || rate <= 0) {
                 throw new Error(`Tasa inválida: ${rate}`);
@@ -1090,10 +1090,10 @@
         let isValid = true;
         
         if (input.id === 'comision') {
-            const valorNumerico = parseFloat(input.dataset.rawValue || value.replace(',', '.'));
+            const valorNumerico = peFloat(input.dataset.rawValue || value.replace(',', '.'));
             isValid = !isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 100;
         } else {
-            const valorNumerico = parseInt(value.replace(/\./g, ''));
+            const valorNumerico = peInt(value.replace(/\./g, ''));
             isValid = !isNaN(valorNumerico) && valorNumerico > 0;
         }
         
@@ -1106,13 +1106,13 @@
         return {
             monedaOrigen: document.getElementById('monedaOrigen').value,
             monedaDestino: document.getElementById('monedaDestino').value,
-            comision: parseFloat(
+            comision: peFloat(
                 document.getElementById('comision').value
                 .replace(/\./g, '')
                 .replace(',', '.')
                 .trim()
             ),
-            cantidad: parseFloat(
+            cantidad: peFloat(
                 (currentMode === 'receive'
                     ? document.getElementById('cantidadRecibir').value
                     : document.getElementById('cantidadEnviar').value
@@ -1169,7 +1169,7 @@
 
     function limpiarNumeroBR(valor) {
         if (!valor) return NaN;
-        return parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+        return peFloat(valor.replace(/\./g, '').replace(',', '.'));
     }
 
     function configurarAutoFormato() {
@@ -1230,7 +1230,7 @@
                 
                 // Formatear al perder el foco
                 if (id === 'cantidadEnviar' || id === 'cantidadRecibir') {
-                    const rawValue = parseFloat(input.dataset.rawValue || input.value.replace(/\./g, '').replace(',', '.'));
+                    const rawValue = peFloat(input.dataset.rawValue || input.value.replace(/\./g, '').replace(',', '.'));
                     
                     if (!isNaN(rawValue)) {
                         input.value = rawValue.toLocaleString('pt-BR', {
@@ -1242,7 +1242,7 @@
                         input.value = '';
                     }
                 } else if (id === 'comision') {
-                    let valor = parseFloat(input.dataset.rawValue || input.value.replace(',', '.'));
+                    let valor = peFloat(input.dataset.rawValue || input.value.replace(',', '.'));
                     if (isNaN(valor)) {
                         input.value = '';
                         return;
